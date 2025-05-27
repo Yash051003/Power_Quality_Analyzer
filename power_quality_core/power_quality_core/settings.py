@@ -30,14 +30,29 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'signal_acquisition',
+    'harmonic_analysis',
+    'power_metrics',
+    'notifications',
+    'device_management',
+    'historical_analysis',
 ]
+
+THIRD_PARTY_APPS = [
+    'rest_framework',
+    'corsheaders',
+    'channels',
+    'timescaledb',
+]
+
+INSTALLED_APPS = DJANGO_APPS - THIRD_PARTY_APPS
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -67,6 +82,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'power_quality_core.wsgi.application'
+ASGI_APPLICATION = 'power_quality_core.asgi.application'
 
 
 # Database
@@ -77,6 +93,66 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
+
+
+# Redis Configuration
+# REDIS_URL = config('REDIS_URL', default='redis://localhost:6379/0')
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': REDIS_URL,
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
+#     }
+# }
+
+#Channels (WebSocket)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            # 'hosts': [REDIS_URL],
+        },
+    },
+}
+
+# CELERY_BROKER_URL = REDIS_URL
+# CELERY_RESULT_BACKEND = REDIS_URL
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
+# CELERY_TIMEZONE = 'UTC'
+
+# # MQTT Configuration
+# MQTT_SETTINGS = {
+#     'BROKER_HOST': config('MQTT_BROKER_HOST', default='localhost'),
+#     'BROKER_PORT': config('MQTT_BROKER_PORT', default=1883, cast=int),
+#     'USERNAME': config('MQTT_USERNAME', default=''),
+#     'PASSWORD': config('MQTT_PASSWORD', default=''),
+#     'TOPICS': {
+#         'RAW_DATA': 'power_quality/raw_data',
+#         'DEVICE_STATUS': 'power_quality/device_status',
+#         'COMMANDS': 'power_quality/commands',
+#     }
+# }
+
+# REST Framework
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 50,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
 }
 
 
@@ -120,3 +196,16 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# import os
+# from decouple import config
+
+# environment = config('DJANGO_ENVIRONMENT', default='development')
+
+# if environment == 'production':
+#     from .production import *
+# elif environment == 'testing':
+#     from .testing import *
+# else:
+#     from .development import *
